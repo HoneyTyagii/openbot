@@ -736,6 +736,34 @@ jobs:
       - name: Validate the remote Compose files
         run: bun run remote:check:compose
 
+  mobile-share-sender-e2e:
+    # Builds the page that the iOS share extension runs and drives it in the runner's Chrome, as the
+    # extension's web view does. It needs no host, display or external service.
+    name: Share extension page E2E
+    needs: detect
+    if: needs.detect.outputs.surfaces == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Bun
+        uses: ./.github/actions/setup-bun
+        with:
+          install: ignore-scripts
+
+      - name: Run the share extension page E2E test
+        run: bun run test:mobile-share-sender
+
+      - name: Upload the share extension page E2E report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: mobile-share-sender-e2e
+          path: .openbot-build/mobile-share-sender-e2e/report.json
+          if-no-files-found: ignore
+
   api:
     # `check:api` ends with `api:build:check`, the preview build of the Worker. For a pull request
     # from this repository, this job uploads that build. It has no write token, and its only secret

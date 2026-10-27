@@ -461,7 +461,13 @@ the system share sheet and removes it when that sheet closes. The app you select
 Cloudflare account storage does not receive these files.
 When you share text, a link, an image or a file from another app to OpenBot, the phone keeps a copy
 of each file in its app cache until the chat that you choose has read it, or until you close the
-share sheet. Nothing is sent until you send the message. To find out whether a shared link points to
+share sheet. Nothing is sent until you send the message. On iPhone, the OpenBot share extension can
+send the message itself, without the app. It uses the same encrypted connection to the host and the
+same account service as the app. For this, the app gives the extension its session in a keychain
+item that only the app and the extension can read, and writes the names of your servers and agents,
+the agents' pictures and the servers' public keys to storage that only the app and its extensions share. These stay on
+the phone, and sign-out removes them. The app tells iOS which agents you send messages to, so the
+iOS share sheet can offer those agents first. iOS keeps this on the phone, and sign-out removes it. To find out whether a shared link points to
 an image, the phone requests the link from its website and reads only the response headers. When the
 link is an image, the phone downloads it and attaches it in place of the link. It stops a download
 after 10 MB, and a larger image stays a link.

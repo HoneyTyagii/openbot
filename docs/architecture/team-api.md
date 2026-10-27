@@ -151,8 +151,16 @@ The one exception is development builds: `bun run dev:mobile` opens the link wit
 and a `__DEV__` build redeems it without confirmation only when its account service is a loopback
 or private-network `http:` origin. Release builds always use the confirmed flow.
 Plugin links open their validated public page in the in-app browser. Unsupported links show a
-safe fallback. A share from another app opens `openbot://expo-sharing` (the iOS share extension or an
-Android share intent of `expo-sharing`); the share waits in native storage through sign-in. The share
+safe fallback. On iOS the share extension sends a share by itself, without the app: it shows the
+agents, and a hidden web view runs `share-sender.html`, a build of the Team client
+(`apps/mobile/src/features/share/extension/share-sender.ts`) that connects, uploads the files and
+sends the message. The extension makes every account service request itself and refuses any other
+origin. It reads the servers in the app's order, the agents with their avatar pictures, the accent
+and the localized text that `ShareExtensionSync` writes to the App Group, and the session from a
+keychain group that only the app and the extension share. The app donates `INSendMessageIntent`
+for each agent it sends to, with its avatar, so the share sheet offers those agents first. With no data, the app lock on, a share that one message cannot hold, or a failed send that the
+user gives to the app, the extension opens `openbot://expo-sharing` as before. Android always uses that
+path. The share waits in native storage through sign-in. The share
 sheet moves its files into the app cache, the user chooses an agent, and that chat's composer gets the
 text and files, which follow the attachment rules above. The phone reads the response headers of a
 shared link; a link to an image of at most 10 MB is downloaded and comes as a file instead of the link. Permanent invitation metadata comes from the shared Team client; revocation stops
