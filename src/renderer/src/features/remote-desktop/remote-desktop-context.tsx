@@ -239,13 +239,15 @@ const RemoteDesktop = createSimpleContext({
     async function disconnectRemoteDesktopWorkspace(restoreFocus = true): Promise<void> {
       const serverId = remoteDesktopWorkspaceServerId();
       if (!serverId) return;
-      ++remoteDesktopConnectionRequest;
+      const request = ++remoteDesktopConnectionRequest;
       clearRemoteDesktopConnectionError();
       setRemoteDesktopSessionEstablished(false);
       setRemoteDesktopViewerFailed(false);
       const session = latestRemoteDesktopSession(serverId);
       if (session) await disconnectRemoteDesktop(session.id);
       else await remoteDesktopConnectPromise;
+      // A disconnect that runs after the workspace is hidden can end after the user opens it again.
+      if (request !== remoteDesktopConnectionRequest) return;
       remoteDesktopConnectPromise = null;
       setRemoteDesktopConnectingServerId(null);
       setRemoteDesktopWorkspaceVisible(false);
