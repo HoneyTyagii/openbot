@@ -102,6 +102,9 @@ export const messages = {
   "error.team.browserSessionNotFound": "Browseransichtssitzung nicht gefunden.",
   "error.team.mcpUnsupported": "Diese Verbindung unterstützt keine MCP-Server.",
   "error.team.storageUnsupported": "Diese Verbindung unterstützt keinen Speicher.",
+  "error.team.machineResourcesUnsupported": "Diese Verbindung unterstützt keine Maschinennutzung.",
+  "error.team.machineAlertMemberInvalid":
+    "Nur Eigentümer oder Administratoren dieses Servers können Maschinenwarnungen erhalten.",
   "error.team.hostedSitesUnsupported": "Diese Verbindung unterstützt keine Websites.",
   "error.team.hostedSitesUnregistered": "Dieser Server ist nicht bei OpenBot registriert und hat daher keine Websites.",
   "error.team.hostedSiteNotFound": "Website nicht gefunden.",

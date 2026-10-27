@@ -66,6 +66,7 @@ import {
   DEFAULT_BUSY_MESSAGE_MODE,
   DEFAULT_DYNAMIC_ISLAND_PREFERENCE,
   DEFAULT_EXTERNAL_LINK_PREFERENCE,
+  DEFAULT_MACHINE_ALERT_SETTINGS,
   DEFAULT_PROMPT_CACHE_TTL,
   DEFAULT_PROVIDER_ACCOUNT_ID,
   DEFAULT_PROVIDER_DETECTION_SETTINGS,
@@ -77,6 +78,7 @@ import {
   type DirectTypingRealtimeEvent,
   type DynamicIslandPreference,
   type DynamicIslandPresentation,
+  decodeMachineAlertSettings,
   defaultProviderModel,
   type ExternalLinkBrowsers,
   type ExternalLinkPreference,
@@ -88,6 +90,7 @@ import {
   isAgentSummary,
   isPromptCacheTtl,
   isReleasedRoutineSchedule,
+  type MachineAlertSettings,
   type MacPermissionId,
   nextBrowserProfileHue,
   normalizeMcpConfig,
@@ -401,6 +404,8 @@ export function createMockOpenBot(options: MockOpenBotOptions = {}): MockOpenBot
   let busyMessageMode: BusyMessageModePreference = { mode: DEFAULT_BUSY_MESSAGE_MODE };
   let agentDefaults: AgentDefaults = { ...DEFAULT_AGENT_DEFAULTS };
   let agentMemoryLimit: AgentMemoryLimitPreference = { limit: DEFAULT_AGENT_MEMORY_LIMIT };
+  // The disk level is below the preview disk use (82%), so Storage shows a passed level.
+  let machineAlerts: MachineAlertSettings = { ...DEFAULT_MACHINE_ALERT_SETTINGS, diskPercent: 80 };
   let promptCacheTtl: PromptCacheTtlSetting = { ...DEFAULT_PROMPT_CACHE_TTL };
   let agentAccess: AgentAccessChange = { revision: 0, everyone: {}, roles: [] };
   const agentMemoryLimitListeners = new Set<(preference: AgentMemoryLimitPreference) => void>();
@@ -2789,6 +2794,12 @@ export function createMockOpenBot(options: MockOpenBotOptions = {}): MockOpenBot
         agentMemoryLimit = { limit };
         for (const listener of agentMemoryLimitListeners) listener(clone(agentMemoryLimit));
         return hostAgentMemoryLimit(agentMemoryLimit);
+      },
+      // Preview has one host, so every server shares one set of machine alerts.
+      getMachineAlerts: async () => clone(machineAlerts),
+      setMachineAlerts: async (settings) => {
+        machineAlerts = decodeMachineAlertSettings(settings);
+        return clone(machineAlerts);
       },
       // Preview has one host, so every server shares one cache time.
       getPromptCacheTtl: async () => clone(promptCacheTtl),

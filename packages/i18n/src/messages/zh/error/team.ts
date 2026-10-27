@@ -100,6 +100,8 @@ export const messages = {
   "error.team.browserSessionNotFound": "未找到浏览器视图会话。",
   "error.team.mcpUnsupported": "当前连接不支持 MCP 服务器。",
   "error.team.storageUnsupported": "当前连接不支持存储。",
+  "error.team.machineResourcesUnsupported": "当前连接不支持机器使用情况。",
+  "error.team.machineAlertMemberInvalid": "只有该服务器的所有者或管理员可以接收机器警报。",
   "error.team.hostedSitesUnsupported": "当前连接不支持站点。",
   "error.team.hostedSitesUnregistered": "该服务器未在 OpenBot 注册，因此没有站点。",
   "error.team.hostedSiteNotFound": "未找到该站点。",

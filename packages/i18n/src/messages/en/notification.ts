@@ -26,6 +26,11 @@ export const messages = defineMessages("notification", {
     one: "{count} agent waits. Resets {reset}.",
     other: "{count} agents wait. Resets {reset}.",
   },
+  // A metric of a server machine passed its alert level. {percent} and {level} are formatted percents.
+  "notification.machineAlert.disk": "{server}: disk {percent} full",
+  "notification.machineAlert.memory": "{server}: memory {percent} used",
+  "notification.machineAlert.cpu": "{server}: CPU {percent} busy",
+  "notification.machineAlert.body": "It passed the alert level of {level}. See Server settings > Storage.",
   "notification.test": "Notifications are working.",
   "notification.welcome": "OpenBot will tell you here when an agent needs you.",
   // The toast region in each window.

@@ -25,6 +25,10 @@ export const messages = {
     one: "{count} agent attend. La limite se réinitialise {reset}.",
     other: "{count} agents attendent. La limite se réinitialise {reset}.",
   },
+  "notification.machineAlert.disk": "{server} : disque plein à {percent}",
+  "notification.machineAlert.memory": "{server} : mémoire utilisée à {percent}",
+  "notification.machineAlert.cpu": "{server} : CPU occupé à {percent}",
+  "notification.machineAlert.body": "Le seuil d’alerte de {level} est dépassé. Voir Réglages du serveur > Stockage.",
   "notification.test": "Les notifications fonctionnent.",
   "notification.welcome": "OpenBot vous préviendra ici quand un agent aura besoin de vous.",
   // The toast region in each window.

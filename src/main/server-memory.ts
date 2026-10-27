@@ -177,24 +177,7 @@ export class ServerMemory implements HostMemory {
   });
 
   #read = Effect.fn("ServerMemory.read")(function* (this: ServerMemory) {
-    const result = yield* Effect.result(
-      Effect.gen(function* () {
-        const text = yield* memoryIO(() => readFile("/proc/meminfo", "utf8"));
-        const machine = yield* Effect.try({
-          try: () => parseMeminfo(text),
-          catch: (cause) => new HostMemoryFailure({ cause }),
-        });
-        const unit = yield* readUnitMemory();
-        if (typeof unit === "string") return { sample: machine, unit };
-        return {
-          sample: {
-            total: Math.min(machine.total, unit.max),
-            available: Math.min(machine.available, Math.max(0, unit.max - unit.current)),
-          },
-          unit: "limited" as const,
-        };
-      }),
-    );
+    const result = yield* Effect.result(readLinuxMemory());
     if (result._tag === "Success") {
       if (result.success.unit === "unknown" && !this.#noCgroupLogged) {
         this.#noCgroupLogged = true;
@@ -243,6 +226,27 @@ export class ServerMemory implements HostMemory {
 function criticalBytes(sample: MemorySample): number {
   return Math.max(256 * MIB, sample.total * 0.06);
 }
+
+/**
+ * The memory of a Linux machine, or of main's cgroup when it has a smaller limit. `unit` says which
+ * one limits it. Server settings read it too, for the machine part of Storage.
+ */
+export const readLinuxMemory = Effect.fn("ServerMemory.readLinux")(function* () {
+  const text = yield* memoryIO(() => readFile("/proc/meminfo", "utf8"));
+  const machine = yield* Effect.try({
+    try: () => parseMeminfo(text),
+    catch: (cause) => new HostMemoryFailure({ cause }),
+  });
+  const unit = yield* readUnitMemory();
+  if (typeof unit === "string") return { sample: machine, unit };
+  return {
+    sample: {
+      total: Math.min(machine.total, unit.max),
+      available: Math.min(machine.available, Math.max(0, unit.max - unit.current)),
+    },
+    unit: "limited" as const,
+  };
+});
 
 function parseMeminfo(text: string): MemorySample {
   const kib = (name: string): number => {

@@ -105,6 +105,10 @@ export const messages = {
   "error.team.browserSessionNotFound": "Session de vue du navigateur introuvable.",
   "error.team.mcpUnsupported": "Les serveurs MCP ne sont pas pris en charge par cette connexion.",
   "error.team.storageUnsupported": "Le stockage n’est pas pris en charge par cette connexion.",
+  "error.team.machineResourcesUnsupported":
+    "L’utilisation de la machine n’est pas prise en charge par cette connexion.",
+  "error.team.machineAlertMemberInvalid":
+    "Seul un propriétaire ou un admin de ce serveur peut recevoir les alertes de la machine.",
   "error.team.hostedSitesUnsupported": "Les sites ne sont pas pris en charge par cette connexion.",
   "error.team.hostedSitesUnregistered": "Ce serveur n’est pas enregistré auprès d’OpenBot : il n’a donc pas de sites.",
   "error.team.hostedSiteNotFound": "Site introuvable.",

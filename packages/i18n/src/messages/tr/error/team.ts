@@ -99,6 +99,8 @@ export const messages = {
   "error.team.browserSessionNotFound": "Tarayıcı görünümü oturumu bulunamadı.",
   "error.team.mcpUnsupported": "MCP sunucuları bu bağlantı tarafından desteklenmiyor.",
   "error.team.storageUnsupported": "Depolama bu bağlantı tarafından desteklenmiyor.",
+  "error.team.machineResourcesUnsupported": "Makine kullanımı bu bağlantı tarafından desteklenmiyor.",
+  "error.team.machineAlertMemberInvalid": "Makine uyarılarını yalnızca bu sunucunun sahibi veya yöneticisi alabilir.",
   "error.team.hostedSitesUnsupported": "Siteler bu bağlantı tarafından desteklenmiyor.",
   "error.team.hostedSitesUnregistered": "Bu sunucu OpenBot'a kayıtlı değil, bu nedenle sitesi yok.",
   "error.team.hostedSiteNotFound": "Site bulunamadı.",

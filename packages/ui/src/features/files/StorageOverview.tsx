@@ -14,6 +14,7 @@ import {
 import { SettingsBackIcon } from "@openbot/ui/components/SettingsPanel";
 import type { AgentProfile } from "@openbot/ui/data";
 import { useText } from "@openbot/ui/text";
+import type { JSX } from "@solidjs/web";
 import { createMemo, createSignal, createUniqueId, For, Show } from "solid-js";
 import { AgentAvatar } from "../agents/AgentAvatar";
 import { FileList } from "./FileList";
@@ -66,6 +67,8 @@ export interface StorageOverviewProps {
   onRemoveOldRuntimes?: () => void | Promise<void>;
   onPreviewFile: (file: StoredFileRow) => void;
   onFileAction: (file: StoredFileRow, action: StoredFileAction) => void | Promise<void>;
+  /** Shown above the OpenBot folder: the use of the whole machine, when the viewer can see it. */
+  machine?: JSX.Element;
 }
 
 const LARGEST_CHATS = 5;
@@ -139,6 +142,7 @@ export function StorageOverview(props: StorageOverviewProps) {
       }
     >
       <div class="storage-overview" aria-busy={props.state === "scanning" ? "true" : undefined}>
+        {props.machine}
         <section class="storage-summary" aria-labelledby={`${headingId}-summary`}>
           <div class="storage-summary-heading">
             <div>

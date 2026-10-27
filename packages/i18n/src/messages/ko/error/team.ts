@@ -101,6 +101,8 @@ export const messages = {
   "error.team.browserSessionNotFound": "브라우저 화면 세션을 찾을 수 없어요.",
   "error.team.mcpUnsupported": "이 연결에서는 MCP 서버를 지원하지 않아요.",
   "error.team.storageUnsupported": "이 연결에서는 스토리지를 지원하지 않아요.",
+  "error.team.machineResourcesUnsupported": "이 연결에서는 머신 사용량을 지원하지 않아요.",
+  "error.team.machineAlertMemberInvalid": "이 서버의 소유자나 관리자만 머신 알림을 받을 수 있어요.",
   "error.team.hostedSitesUnsupported": "이 연결에서는 사이트를 지원하지 않아요.",
   "error.team.hostedSitesUnregistered": "이 서버는 OpenBot에 등록되어 있지 않아서 사이트가 없어요.",
   "error.team.hostedSiteNotFound": "사이트를 찾을 수 없어요.",

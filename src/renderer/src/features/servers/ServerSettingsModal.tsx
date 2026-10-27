@@ -763,7 +763,7 @@ export function ServerSettingsModal(props: ServerSettingsModalProps) {
         <Show when={props.storage}>
           {(storage) => (
             <Tabs.Content value="storage" class="settings-modal-tab-panel server-settings-panel" data-tab="storage">
-              <ServerStoragePanel serverId={props.server.id} {...storage()} />
+              <ServerStoragePanel serverId={props.server.id} members={props.members} {...storage()} />
             </Tabs.Content>
           )}
         </Show>

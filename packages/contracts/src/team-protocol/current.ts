@@ -50,6 +50,7 @@ import { HOST_UPDATE_CAPABILITY } from "./host-update-v1";
 import { HOSTED_SITES_CAPABILITY } from "./hosted-sites-v1";
 import { INSTANCE_TRANSFER_CAPABILITY } from "./instance-transfer-v1";
 import { LIVE_ACTIVITY_PUSH_CAPABILITY } from "./live-activity-push-v1";
+import { MACHINE_RESOURCES_CAPABILITY } from "./machine-resources-v1";
 import { MCP_SIGN_IN_APP_CAPABILITY } from "./mcp-sign-in-app-v1";
 import { MCP_SIGN_IN_CAPABILITY } from "./mcp-sign-in-v1";
 import { TEAM_MESSAGE_CLIENT_ID_CAPABILITY } from "./message-client-id-v1";
@@ -161,6 +162,7 @@ export {
   HOSTED_SITES_CAPABILITY,
   INSTANCE_TRANSFER_CAPABILITY,
   LIVE_ACTIVITY_PUSH_CAPABILITY,
+  MACHINE_RESOURCES_CAPABILITY,
   MCP_SERVERS_CAPABILITY,
   MCP_SIGN_IN_APP_CAPABILITY,
   MCP_SIGN_IN_CAPABILITY,
@@ -306,6 +308,7 @@ export const TEAM_CURRENT_CAPABILITIES = [
   BROWSER_PROFILES_CAPABILITY,
   PROVIDER_ACCOUNT_RELAY_CAPABILITY,
   STORAGE_DISK_CAPABILITY,
+  MACHINE_RESOURCES_CAPABILITY,
   PROMPT_CACHE_TTL_CAPABILITY,
   PROVIDER_DEFAULT_CAPABILITY,
   CLAUDE_API_KEY_CAPABILITY,
@@ -428,6 +431,7 @@ export const TEAM_BOOTSTRAP_CAPABILITIES = TEAM_CURRENT_CAPABILITIES.filter(
     capability !== BROWSER_PROFILES_CAPABILITY &&
     capability !== PROVIDER_ACCOUNT_RELAY_CAPABILITY &&
     capability !== STORAGE_DISK_CAPABILITY &&
+    capability !== MACHINE_RESOURCES_CAPABILITY &&
     capability !== PROMPT_CACHE_TTL_CAPABILITY &&
     capability !== PROVIDER_DEFAULT_CAPABILITY &&
     capability !== CLAUDE_API_KEY_CAPABILITY &&
@@ -494,6 +498,7 @@ export function legacyTeamCapabilities(capabilities: readonly string[]): string[
       capability !== BROWSER_PROFILES_CAPABILITY &&
       capability !== PROVIDER_ACCOUNT_RELAY_CAPABILITY &&
       capability !== STORAGE_DISK_CAPABILITY &&
+      capability !== MACHINE_RESOURCES_CAPABILITY &&
       capability !== PROMPT_CACHE_TTL_CAPABILITY &&
       capability !== PROVIDER_DEFAULT_CAPABILITY &&
       capability !== CLAUDE_API_KEY_CAPABILITY &&

@@ -57,6 +57,7 @@ export * from "./ipc-host-timezone";
 export * from "./ipc-host-update";
 export * from "./ipc-hosted-sites";
 export * from "./ipc-instance-transfer";
+export * from "./ipc-machine-resources";
 export * from "./ipc-marketplace-agents";
 export * from "./ipc-mcp-servers";
 export * from "./ipc-messaging";

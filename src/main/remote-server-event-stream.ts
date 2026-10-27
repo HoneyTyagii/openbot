@@ -1,4 +1,5 @@
 import type { HostRestartEvent } from "@openbot/contracts/team-protocol/host-update-v1";
+import type { MachineAlertEvent } from "@openbot/contracts/team-protocol/machine-resources-v1";
 import { optionalTeamEvent, optionalTeamEventToCurrent } from "@openbot/contracts/team-protocol/optional-events";
 import { decodeTeamProtocolV8BaseCurrentEvent } from "@openbot/contracts/team-protocol/v8-base-adapter";
 import { Effect, Exit, Result, Scope } from "effect";
@@ -113,6 +114,7 @@ export interface RemoteEventStreamOptions {
   onDirectMessage: (serverId: string, event: DirectMessageRealtimeEvent) => void;
   onDirectTyping: (serverId: string, event: DirectTypingRealtimeEvent) => void;
   onHostRestart: (serverId: string, event: HostRestartEvent) => void;
+  onMachineAlert: (serverId: string, event: MachineAlertEvent) => void;
   onOffline: (serverId: string) => void;
   onChanged: () => void;
 }
@@ -131,6 +133,7 @@ export class RemoteEventStream {
   readonly #onDirectMessage: RemoteEventStreamOptions["onDirectMessage"];
   readonly #onDirectTyping: RemoteEventStreamOptions["onDirectTyping"];
   readonly #onHostRestart: RemoteEventStreamOptions["onHostRestart"];
+  readonly #onMachineAlert: RemoteEventStreamOptions["onMachineAlert"];
   readonly #onOffline: RemoteEventStreamOptions["onOffline"];
   readonly #onChanged: RemoteEventStreamOptions["onChanged"];
   readonly #controllers = new Map<string, AbortController>();
@@ -158,6 +161,7 @@ export class RemoteEventStream {
     this.#onDirectMessage = options.onDirectMessage;
     this.#onDirectTyping = options.onDirectTyping;
     this.#onHostRestart = options.onHostRestart;
+    this.#onMachineAlert = options.onMachineAlert;
     this.#onOffline = options.onOffline;
     this.#onChanged = options.onChanged;
   }
@@ -561,6 +565,8 @@ export class RemoteEventStream {
               this.#onDirectTyping(serverId, event);
             } else if (event.type === "host-restart") {
               this.#onHostRestart(serverId, event);
+            } else if (event.type === "machine-alert") {
+              this.#onMachineAlert(serverId, event);
             } else {
               if (!agentEventsReady) {
                 if (bufferedAgentEvents.length >= REMOTE_EVENT_INITIAL_BUFFER_LIMIT) {

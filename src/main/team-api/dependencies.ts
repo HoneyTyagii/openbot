@@ -13,6 +13,7 @@ import type { HostEventsApi } from "../host-events-api";
 import type { HostEventsService } from "../host-events-service";
 import type { HostReleaseService } from "../host-release-service";
 import type { HostService } from "../host-service";
+import type { MachineAlertMonitor } from "../machine-alerts";
 import type { PromptCacheTtlPreferenceStore } from "../prompt-cache-ttl-preference-store";
 import type { ProviderCredentialStore } from "../provider-credential-store";
 import type { ProviderRuntimeManager } from "../provider-runtime-manager";
@@ -222,6 +223,11 @@ export type TeamApiProviderUsageResets = Pick<AgentService, "providerUsageResets
 
 /** Its presence is what `#protocolSupport` advertises `storage-v1` and `storage-disk-v1` on. */
 export type TeamApiStorage = Pick<StorageUsageService, "usage" | "deleteFile" | "clear" | "disk">;
+/** `machine-resources-v1`: the machine use and its alerts. The routes are admin-only. */
+export type TeamApiMachine = Pick<
+  MachineAlertMonitor,
+  "metrics" | "alerts" | "setAlerts" | "canBeResponsible" | "pending" | "subscribe"
+>;
 /** `hosted-sites-v1`: the openbot.site sites of this server. Members list; only admins delete. */
 export type TeamApiHostedSites = Pick<HostedSiteDesktopService, "listServerSites" | "deleteServerSite">;
 
@@ -486,6 +492,7 @@ export interface TeamApiOptions {
   /** Starts and waits for the managed tool runtimes behind the MCP save, enable, and test routes. */
   mcpToolRuntimePreparation?: McpToolRuntimePreparation;
   storage?: TeamApiStorage;
+  machine?: TeamApiMachine;
   hostedSites?: TeamApiHostedSites;
   agentImport?: TeamApiAgentImport;
   instanceTransfer?: TeamApiInstanceTransfer;

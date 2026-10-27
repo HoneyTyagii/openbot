@@ -38,6 +38,7 @@ import { HOST_UPDATE_CODECS } from "./host-update-v1";
 import { HOSTED_SITES_CODECS } from "./hosted-sites-v1";
 import { INSTANCE_TRANSFER_CODECS } from "./instance-transfer-v1";
 import { LIVE_ACTIVITY_PUSH_CODECS } from "./live-activity-push-v1";
+import { MACHINE_RESOURCES_CODECS } from "./machine-resources-v1";
 import { MCP_SIGN_IN_APP_CODECS } from "./mcp-sign-in-app-v1";
 import { MCP_SIGN_IN_CODECS } from "./mcp-sign-in-v1";
 import { ONEPASSWORD_CONNECTOR_CODECS } from "./onepassword-connector-v1";
@@ -120,6 +121,7 @@ const CODECS: ReadonlyMap<string, OptionalRouteCodec> = new Map([
   ...ROUTINE_RESULTS_CODECS,
   ...WEBHOOK_TESTS_CODECS,
   ...STORAGE_DISK_CODECS,
+  ...MACHINE_RESOURCES_CODECS,
   ...PROVIDER_ACCOUNTS_CODECS,
   ...PROVIDER_ACCOUNT_RELAY_CODECS,
   ...PROVIDER_USAGE_RESET_CODECS,

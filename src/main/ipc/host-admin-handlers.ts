@@ -17,12 +17,14 @@ import {
   decodeHostAgentMemoryLimit,
   decodeHostTimezoneSettings,
   decodeHostUpdateStatus,
+  decodeMachineAlertSettings,
   decodePromptCacheTtlSetting,
   type HostUpdateSettingsChange,
   type HostUpdateStatus,
   hostAgentMemoryLimit,
   isPromptCacheTtl,
   LOCAL_SERVER_ID,
+  type MachineAlertSettings,
   type PromptCacheTtl,
   parseAgentAccessChange,
   type ServerSummary,
@@ -41,6 +43,10 @@ import { HOST_ADMIN_CAPABILITY, HOST_ADMIN_ROUTES } from "@openbot/contracts/tea
 import { HOST_TIMEZONE_CAPABILITY, HOST_TIMEZONE_ROUTES } from "@openbot/contracts/team-protocol/host-timezone-v1";
 import { HOST_UPDATE_CAPABILITY, HOST_UPDATE_ROUTES } from "@openbot/contracts/team-protocol/host-update-v1";
 import {
+  MACHINE_RESOURCES_CAPABILITY,
+  MACHINE_RESOURCES_ROUTES,
+} from "@openbot/contracts/team-protocol/machine-resources-v1";
+import {
   PROMPT_CACHE_TTL_CAPABILITY,
   PROMPT_CACHE_TTL_ROUTES,
 } from "@openbot/contracts/team-protocol/prompt-cache-ttl-v1";
@@ -49,6 +55,7 @@ import { runCauseEffect } from "../../backend/effect-boundary";
 import { type AgentAccessStore, agentAccessSnapshot } from "../agent-access-store";
 import type { AgentMemoryLimitSetting } from "../agent-memory-limit-preference-store";
 import type { HostService } from "../host-service";
+import type { MachineAlertMonitor } from "../machine-alerts";
 import type { PromptCacheTtlPreferenceStore } from "../prompt-cache-ttl-preference-store";
 import { acceptEmpty, decodeHostReleaseStatusFromHost, type ResponseDecoder } from "../remote-host-decoding";
 import type { RemoteRequestInit } from "../remote-server-client";
@@ -76,6 +83,7 @@ interface HostAdminIpcDependencies {
   remoteServers: HostAdminRemoteServers;
   serverTimezone: Pick<ServerTimezonePreferenceStore, "get" | "set">;
   agentMemoryLimit: AgentMemoryLimitSetting;
+  machineAlerts: Pick<MachineAlertMonitor, "alerts" | "setAlerts" | "canBeResponsible">;
   promptCacheTtl: Pick<PromptCacheTtlPreferenceStore, "get" | "set">;
   agentAccess: Pick<AgentAccessStore, "levels" | "set">;
   /** The server ID of this computer's host, when it has one. Roles are stored by it. */
@@ -94,6 +102,7 @@ export function hostAdminIpcHandlers({
   remoteServers,
   serverTimezone,
   agentMemoryLimit,
+  machineAlerts,
   promptCacheTtl,
   agentAccess,
   localServerId,
@@ -120,6 +129,11 @@ export function hostAdminIpcHandlers({
     if (!remoteServers.supportsCapability(serverId, AGENT_MEMORY_LIMIT_CAPABILITY))
       throw new Error(sourceText("error.team.agentMemoryLimitUnsupported"));
     return runCauseEffect(remoteServers.request(serverId, route, decodeHostAgentMemoryLimit, { method: "POST", body }));
+  }
+  function remoteMachineAlerts(serverId: string, route: string, body: MachineAlertSettings | Record<string, never>) {
+    if (!remoteServers.supportsCapability(serverId, MACHINE_RESOURCES_CAPABILITY))
+      throw new Error(sourceText("error.team.machineResourcesUnsupported"));
+    return runCauseEffect(remoteServers.request(serverId, route, decodeMachineAlertSettings, { method: "POST", body }));
   }
   function remotePromptCacheTtl(serverId: string, route: string, body: { ttl?: PromptCacheTtl }) {
     if (!remoteServers.supportsCapability(serverId, PROMPT_CACHE_TTL_CAPABILITY))
@@ -231,6 +245,19 @@ export function hostAdminIpcHandlers({
         local: async (limit) =>
           hostAgentMemoryLimit(await runCauseEffect(agentMemoryLimit.set(parseAgentMemoryLimitPreference({ limit })))),
         remote: (limit, serverId) => remoteMemoryLimit(serverId, AGENT_MEMORY_LIMIT_ROUTES.update, { limit }),
+      }),
+      getMachineAlerts: scopedQueryHandler({
+        local: () => machineAlerts.alerts(),
+        remote: (serverId) => remoteMachineAlerts(serverId, MACHINE_RESOURCES_ROUTES.alerts, {}),
+      }),
+      // The host checks the member, so a remote change is checked only for its shape here.
+      setMachineAlerts: scopedHandler(decodeMachineAlertSettings, {
+        local: (settings) => {
+          if (!machineAlerts.canBeResponsible(settings.responsibleMemberId))
+            throw new Error(sourceText("error.team.machineAlertMemberInvalid"));
+          return runCauseEffect(machineAlerts.setAlerts(settings));
+        },
+        remote: (settings, serverId) => remoteMachineAlerts(serverId, MACHINE_RESOURCES_ROUTES.updateAlerts, settings),
       }),
       getPromptCacheTtl: scopedQueryHandler({
         local: () => promptCacheTtl.get(),

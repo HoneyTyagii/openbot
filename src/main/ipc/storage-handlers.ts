@@ -8,6 +8,7 @@ import type { RemoteWorkflowError } from "../remote-service-effects";
 
 import {
   assertStorageUsageScope,
+  decodeMachineMetrics,
   decodeStorageDisk,
   decodeStorageUsage,
   parseClearStorageInput,
@@ -19,11 +20,16 @@ import {
 } from "@openbot/contracts/ipc";
 import { isDynamicRecord } from "@openbot/contracts/runtime-values";
 import type { TeamCurrentCapability } from "@openbot/contracts/team-protocol/current";
+import {
+  MACHINE_RESOURCES_CAPABILITY,
+  MACHINE_RESOURCES_ROUTES,
+} from "@openbot/contracts/team-protocol/machine-resources-v1";
 import { STORAGE_DISK_CAPABILITY, STORAGE_DISK_ROUTES } from "@openbot/contracts/team-protocol/storage-disk-v1";
 import { STORAGE_ROUTES } from "@openbot/contracts/team-protocol/storage-v1";
 import { sourceText } from "@openbot/i18n/source";
 import { runCauseEffect } from "../../backend/effect-boundary";
 import type { StorageAgent, StorageUsageService } from "../../backend/storage-usage";
+import type { MachineAlertMonitor } from "../machine-alerts";
 import type { ProviderRuntimeManager } from "../provider-runtime-manager";
 import type { ResponseDecoder } from "../remote-host-decoding";
 import type { RemoteRequestInit } from "../remote-server-client";
@@ -46,6 +52,7 @@ interface StorageRemoteServers extends Pick<OpenAttachmentDependencies["remoteSe
 
 export interface StorageIpcDependencies extends Omit<OpenAttachmentDependencies, "remoteServers"> {
   storage: Pick<StorageUsageService, "usage" | "deleteFile" | "clear" | "disk">;
+  machine: Pick<MachineAlertMonitor, "metrics">;
   providerRuntimes: Pick<ProviderRuntimeManager, "oldVersions" | "removeOldVersions">;
   remoteServers: StorageRemoteServers;
   agents: () => StorageAgent[];
@@ -61,6 +68,7 @@ function decodeStorageChange(value: unknown): undefined {
 
 export function storageIpcHandlers({
   storage,
+  machine,
   providerRuntimes,
   mailbox,
   remoteServers,
@@ -101,6 +109,18 @@ export function storageIpcHandlers({
           if (!remoteServers.supportsCapability(serverId, STORAGE_DISK_CAPABILITY)) return null;
           return runCauseEffect(
             remoteServers.request(serverId, STORAGE_DISK_ROUTES.disk, decodeStorageDisk, { method: "POST", body: {} }),
+          );
+        },
+      }),
+      getMachineMetrics: scopedQueryHandler({
+        local: () => runCauseEffect(machine.metrics()),
+        remote: (serverId) => {
+          if (!remoteServers.supportsCapability(serverId, MACHINE_RESOURCES_CAPABILITY)) return null;
+          return runCauseEffect(
+            remoteServers.request(serverId, MACHINE_RESOURCES_ROUTES.metrics, decodeMachineMetrics, {
+              method: "POST",
+              body: {},
+            }),
           );
         },
       }),

@@ -104,6 +104,9 @@ export const messages = {
   "error.team.browserSessionNotFound": "Sessie van de browserweergave niet gevonden.",
   "error.team.mcpUnsupported": "Deze verbinding ondersteunt geen MCP-servers.",
   "error.team.storageUnsupported": "Deze verbinding ondersteunt geen opslag.",
+  "error.team.machineResourcesUnsupported": "Deze verbinding ondersteunt geen machinegebruik.",
+  "error.team.machineAlertMemberInvalid":
+    "Alleen een eigenaar of beheerder van deze server kan machinealarmen krijgen.",
   "error.team.hostedSitesUnsupported": "Deze verbinding ondersteunt geen sites.",
   "error.team.hostedSitesUnregistered": "Deze server is niet geregistreerd bij OpenBot, dus hij heeft geen sites.",
   "error.team.hostedSiteNotFound": "Site niet gevonden.",

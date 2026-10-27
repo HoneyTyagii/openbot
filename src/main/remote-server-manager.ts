@@ -61,6 +61,7 @@ import { TEAM_MEMBER_LEAVE_CAPABILITY, type TeamCurrentCapability } from "@openb
 import { FOCUS_USE_CAPABILITY, FOCUS_USE_ROUTES } from "@openbot/contracts/team-protocol/focus-use-v1";
 import type { HostRestartEvent } from "@openbot/contracts/team-protocol/host-update-v1";
 import { INSTANCE_TRANSFER_ROUTES } from "@openbot/contracts/team-protocol/instance-transfer-v1";
+import type { MachineAlertEvent } from "@openbot/contracts/team-protocol/machine-resources-v1";
 import { decodeTeamProtocolV1CurrentHttpResponse } from "@openbot/contracts/team-protocol/v1-adapter";
 import { sourceText } from "@openbot/i18n/source";
 import { createFocusUsePing } from "@openbot/team-client/focus-use";
@@ -129,6 +130,7 @@ interface RemoteServerEvents {
   presence: [serverId: string, snapshot: TeamPresenceSnapshot];
   directMessage: [serverId: string, event: DirectMessageRealtimeEvent];
   directTyping: [serverId: string, event: DirectTypingRealtimeEvent];
+  machineAlert: [serverId: string, event: MachineAlertEvent];
 }
 
 interface CentralAccountSession {
@@ -317,6 +319,7 @@ export class RemoteServerManager extends EventEmitter<RemoteServerEvents> {
       onDirectMessage: (serverId, event) => this.emit("directMessage", serverId, event),
       onDirectTyping: (serverId, event) => this.emit("directTyping", serverId, event),
       onHostRestart: (serverId, event) => this.#applyHostRestart(serverId, event),
+      onMachineAlert: (serverId, event) => this.emit("machineAlert", serverId, event),
       onOffline: (serverId) => this.#presence.markOffline(serverId),
       onChanged: () => this.#emitChanged(),
     });
@@ -2012,6 +2015,7 @@ export class RemoteServerManager extends EventEmitter<RemoteServerEvents> {
     } else if (event.type === "team-direct-message") this.emit("directMessage", serverId, event);
     else if (event.type === "team-direct-typing") this.emit("directTyping", serverId, event);
     else if (event.type === "host-restart") this.#applyHostRestart(serverId, event);
+    else if (event.type === "machine-alert") this.emit("machineAlert", serverId, event);
     else this.#background(this.#owned(this.#refresh.forward(serverId, event)));
   }
 

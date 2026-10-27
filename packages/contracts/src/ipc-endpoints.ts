@@ -295,6 +295,7 @@ import type {
   InstanceTransferResult,
   InstanceTransferSummary,
 } from "./ipc-instance-transfer";
+import type { MachineAlertSettings, MachineMetrics } from "./ipc-machine-resources";
 import type {
   AgentPublicationPreview,
   AgentSubmission,
@@ -1074,6 +1075,11 @@ export const IPC_ENDPOINTS = {
     // How many memories each agent of the server can keep, and the values its host permits.
     getAgentMemoryLimit: scopedQuery<HostAgentMemoryLimit, "required">()("host-admin:get-agent-memory-limit"),
     setAgentMemoryLimit: scopedRequest<number, HostAgentMemoryLimit, "required">()("host-admin:set-agent-memory-limit"),
+    // The machine alert levels and the member who gets the alert (`machine-resources-v1`).
+    getMachineAlerts: scopedQuery<MachineAlertSettings, "required">()("host-admin:get-machine-alerts"),
+    setMachineAlerts: scopedRequest<MachineAlertSettings, MachineAlertSettings, "required">()(
+      "host-admin:set-machine-alerts",
+    ),
     getPromptCacheTtl: scopedQuery<PromptCacheTtlSetting, "required">()("host-admin:get-prompt-cache-ttl"),
     setPromptCacheTtl: scopedRequest<PromptCacheTtl, PromptCacheTtlSetting, "required">()(
       "host-admin:set-prompt-cache-ttl",
@@ -1645,6 +1651,8 @@ export const IPC_ENDPOINTS = {
     getUsage: scopedRequest<GetStorageUsageInput, StorageUsage | null, "required">()("storage:get-usage"),
     // Free and total disk space with no scan, for the sidebar storage card. Null before `storage-disk-v1`.
     getDisk: scopedQuery<StorageDisk | null, "required">()("storage:get-disk"),
+    // Disk, memory, and CPU of the machine, for Server settings > Storage. Null before `machine-resources-v1`.
+    getMachineMetrics: scopedQuery<MachineMetrics | null, "required">()("storage:get-machine-metrics"),
     deleteFile: scopedRequest<DeleteStoredFileInput, void, "required">()("storage:delete-file"),
     clear: scopedRequest<ClearStorageInput, void, "required">()("storage:clear"),
     openFile: scopedRequest<OpenStoredFileInput, void, "required">()("storage:open-file"),

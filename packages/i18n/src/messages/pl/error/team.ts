@@ -99,6 +99,9 @@ export const messages = {
   "error.team.browserSessionNotFound": "Nie znaleziono sesji podglądu przeglądarki.",
   "error.team.mcpUnsupported": "To połączenie nie obsługuje serwerów MCP.",
   "error.team.storageUnsupported": "To połączenie nie obsługuje pamięci dyskowej.",
+  "error.team.machineResourcesUnsupported": "To połączenie nie obsługuje użycia maszyny.",
+  "error.team.machineAlertMemberInvalid":
+    "Alerty maszyny może otrzymywać tylko właściciel lub administrator tego serwera.",
   "error.team.hostedSitesUnsupported": "To połączenie nie obsługuje witryn.",
   "error.team.hostedSitesUnregistered": "Ten serwer nie jest zarejestrowany w OpenBot, więc nie ma witryn.",
   "error.team.hostedSiteNotFound": "Nie znaleziono witryny.",

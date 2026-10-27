@@ -23,6 +23,11 @@ export const messages = {
     one: "{count} agente aguarda. O limite é renovado {reset}.",
     other: "{count} agentes aguardam. O limite é renovado {reset}.",
   },
+  "notification.machineAlert.disk": "{server}: disco {percent} cheio",
+  "notification.machineAlert.memory": "{server}: memória {percent} em uso",
+  "notification.machineAlert.cpu": "{server}: CPU {percent} ocupada",
+  "notification.machineAlert.body":
+    "Passou do nível de alerta de {level}. Veja Configurações do servidor > Armazenamento.",
   "notification.test": "As notificações estão funcionando.",
   "notification.welcome": "O OpenBot avisará aqui quando um agente precisar de você.",
   "notification.toast.region": "Notificações",

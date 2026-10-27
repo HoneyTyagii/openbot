@@ -104,6 +104,9 @@ export const messages = {
   "error.team.browserSessionNotFound": "Sessione della vista del browser non trovata.",
   "error.team.mcpUnsupported": "I server MCP non sono supportati da questa connessione.",
   "error.team.storageUnsupported": "L'archiviazione non è supportata da questa connessione.",
+  "error.team.machineResourcesUnsupported": "L'uso della macchina non è supportato da questa connessione.",
+  "error.team.machineAlertMemberInvalid":
+    "Solo un proprietario o un amministratore di questo server può ricevere gli avvisi della macchina.",
   "error.team.hostedSitesUnsupported": "I siti non sono supportati da questa connessione.",
   "error.team.hostedSitesUnregistered": "Questo server non è registrato con OpenBot, quindi non ha siti.",
   "error.team.hostedSiteNotFound": "Sito non trovato.",

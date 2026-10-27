@@ -40,6 +40,16 @@ export function createMockStorage(): StorageDesktopApi {
   return {
     getUsage: async (input) => usage(input),
     getDisk: async () => ({ freeBytes: FREE_BYTES, totalBytes: 994 * GB }),
+    // The disk matches `getDisk`; memory and CPU are those of a busy 16 GB, 10-core machine.
+    getMachineMetrics: async () => ({
+      diskFreeBytes: FREE_BYTES,
+      diskTotalBytes: 994 * GB,
+      memoryAvailableBytes: Math.round(4.8 * GB),
+      memoryTotalBytes: 16 * GB,
+      cpuPercent: 42,
+      cpuCores: 10,
+      checkedAt: new Date().toISOString(),
+    }),
     deleteFile: async ({ fileId }) => {
       if (!files.some((file) => file.id === fileId)) throw new Error("The file does not exist or is already deleted.");
       files = files.filter((file) => file.id !== fileId);

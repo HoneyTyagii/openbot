@@ -32,6 +32,7 @@ import {
   type RoutineResultDestination,
 } from "@openbot/contracts/ipc";
 import { TEAM_API_ROUTES } from "@openbot/contracts/team-api-routes";
+import { TEAM_PROTOCOL_V1_WEBSOCKET } from "@openbot/contracts/team-protocol";
 import {
   AGENT_BACKUP_MODELS_CAPABILITY,
   AGENT_BACKUP_MODELS_ROUTES,
@@ -53,6 +54,12 @@ import {
   BROWSER_SECRET_VAULT_CAPABILITY,
   BROWSER_SECRET_VAULT_ROUTES,
 } from "@openbot/contracts/team-protocol/browser-secret-vault-v1";
+import {
+  MACHINE_RESOURCES_CAPABILITY,
+  MACHINE_RESOURCES_ROUTES,
+  type MachineAlertEvent,
+  machineAlertEvent,
+} from "@openbot/contracts/team-protocol/machine-resources-v1";
 import {
   PROVIDER_DEFAULT_CAPABILITY,
   PROVIDER_DEFAULT_ROUTES,
@@ -92,6 +99,7 @@ import { createAgentHostSettings } from "../src/main/agent-host-settings";
 import { type BitwardenCliRunner, BitwardenConnectorService } from "../src/main/bitwarden-connector-service";
 import { BitwardenConnectorStore } from "../src/main/bitwarden-connector-store";
 import { createBrowserProfileService } from "../src/main/browser-profile-service";
+import { MachineAlertMonitor, MachineAlertPreferenceStore } from "../src/main/machine-alerts";
 import type { TeamApiAgents, TeamApiBrowser, TeamApiMailbox } from "../src/main/team-api/dependencies";
 import { isPeerHiddenProvider } from "../src/main/team-api/provider-visibility";
 import { TeamApiServer } from "../src/main/team-api-server";
@@ -563,6 +571,27 @@ function bitwardenSettled(connector: BitwardenConnectorService): Promise<Bitward
 }
 
 const store = new TeamStore(join(root, "team.json"));
+// The real alert store and member check, over a fixed reading of a nearly full machine.
+const machineMetrics = {
+  diskFreeBytes: 3 * 1024 ** 3,
+  diskTotalBytes: 64 * 1024 ** 3,
+  memoryAvailableBytes: 2 * 1024 ** 3,
+  memoryTotalBytes: 16 * 1024 ** 3,
+  cpuPercent: 37,
+  cpuCores: 8,
+  checkedAt: "2026-10-27T12:00:00.000Z",
+};
+const machineAlertStore = new MachineAlertPreferenceStore(join(root, "machine-alerts.json"));
+const machine = new MachineAlertMonitor({
+  read: () =>
+    Effect.sync(() => {
+      record("machineMetrics");
+      return machineMetrics;
+    }),
+  store: machineAlertStore,
+  members: () => store.listMembers(),
+  onError: (message) => logged.push(message),
+});
 const database = new OpenBotDatabase(join(root, "user-data"));
 let server: TeamApiServer | null = null;
 
@@ -717,6 +746,7 @@ try {
     bitwardenConnector,
     vault,
     browserProfiles,
+    machine,
     // Only the disk of the host answers here; the storage-v1 routes are not part of this run.
     storage: {
       usage: unused("storage.usage"),
@@ -1877,6 +1907,125 @@ try {
       "the disk route ignores a path in the body and reads the disk of the OpenBot data",
       withBody.status === 200 && isDeepStrictEqual(withBody.body, expected) && callsOf("disk").length === 3,
       summary(withBody),
+    );
+  }
+
+  // ---- Machine use and alerts (machine-resources-v1) ----
+  {
+    const unsupported = await call("POST", MACHINE_RESOURCES_ROUTES.metrics, { token: adaToken, json: {} });
+    check(
+      "the machine routes without the capability get 400 machineResourcesUnsupported",
+      errorIs(unsupported, 400, sourceText("error.team.machineResourcesUnsupported")) &&
+        callsOf("machineMetrics").length === 0,
+      summary(unsupported),
+    );
+    const capabilities = [MACHINE_RESOURCES_CAPABILITY];
+    const member = await call("POST", MACHINE_RESOURCES_ROUTES.metrics, { token: bobToken, json: {}, capabilities });
+    const memberAlerts = await call("POST", MACHINE_RESOURCES_ROUTES.alerts, {
+      token: bobToken,
+      json: {},
+      capabilities,
+    });
+    check(
+      "a member cannot read the machine use or its alerts",
+      member.status === 403 && memberAlerts.status === 403 && callsOf("machineMetrics").length === 0,
+      [summary(member), summary(memberAlerts)],
+    );
+    const metrics = await call("POST", MACHINE_RESOURCES_ROUTES.metrics, { token: adaToken, json: {}, capabilities });
+    check(
+      "an admin reads the disk, memory and CPU of the host machine",
+      metrics.status === 200 &&
+        isDeepStrictEqual(metrics.body, machineMetrics) &&
+        callsOf("machineMetrics").length === 1,
+      summary(metrics),
+    );
+    const defaults = await call("POST", MACHINE_RESOURCES_ROUTES.alerts, { token: adaToken, json: {}, capabilities });
+    check(
+      "a new host has the default alert levels and no responsible member",
+      defaults.status === 200 &&
+        isDeepStrictEqual(defaults.body, {
+          diskPercent: 90,
+          memoryPercent: 90,
+          cpuPercent: 95,
+          responsibleMemberId: null,
+        }),
+      summary(defaults),
+    );
+    const toMember = await call("POST", MACHINE_RESOURCES_ROUTES.updateAlerts, {
+      token: adaToken,
+      json: { diskPercent: 80, memoryPercent: 90, cpuPercent: 95, responsibleMemberId: bobId },
+      capabilities,
+    });
+    const tooLow = await call("POST", MACHINE_RESOURCES_ROUTES.updateAlerts, {
+      token: adaToken,
+      json: { diskPercent: 10, memoryPercent: 90, cpuPercent: 95, responsibleMemberId: null },
+      capabilities,
+    });
+    check(
+      "the host refuses a member who is not an admin and a level outside 50-99",
+      errorIs(toMember, 400, sourceText("error.team.machineAlertMemberInvalid")) &&
+        tooLow.status === 400 &&
+        !existsSync(join(root, "machine-alerts.json")),
+      [summary(toMember), summary(tooLow)],
+    );
+    const settings = { diskPercent: 80, memoryPercent: 85, cpuPercent: 97, responsibleMemberId: adaId };
+    const saved = await call("POST", MACHINE_RESOURCES_ROUTES.updateAlerts, {
+      token: adaToken,
+      json: settings,
+      capabilities,
+    });
+    const reread = await call("POST", MACHINE_RESOURCES_ROUTES.alerts, { token: adaToken, json: {}, capabilities });
+    const file = parseJson(readFileSync(join(root, "machine-alerts.json"), "utf8"));
+    check(
+      "an admin saves the levels and names an admin, and the host keeps them in its file",
+      saved.status === 200 &&
+        isDeepStrictEqual(saved.body, settings) &&
+        isDeepStrictEqual(reread.body, settings) &&
+        isDeepStrictEqual(file, { version: 1, ...settings }),
+      [summary(saved), summary(reread), file],
+    );
+
+    // The disk (95%) and memory (87%) are above the saved levels, so the first reading alerts ada.
+    const firstAlert = new Promise<{ memberId: string | null; event: MachineAlertEvent }>((resolveAlert) => {
+      const stop = machine.subscribe((memberId, event) => {
+        stop();
+        resolveAlert({ memberId, event });
+      });
+    });
+    machine.start();
+    const first = await firstAlert;
+    // A device of ada that connects now gets the alert that is still in force.
+    const socket = new WebSocket(`ws://127.0.0.1:${port}${TEAM_API_ROUTES.events}`, [
+      TEAM_PROTOCOL_V1_WEBSOCKET,
+      `openbot-token.${adaToken}`,
+    ]);
+    await new Promise<void>((resolveOpen, reject) => {
+      socket.addEventListener("open", () => resolveOpen(), { once: true });
+      socket.addEventListener("error", () => reject(new Error("The event socket did not open.")), { once: true });
+    });
+    const received = new Promise<MachineAlertEvent>((resolveEvent, reject) => {
+      socket.addEventListener("message", (message) => {
+        const event = machineAlertEvent(JSON.parse(String(message.data)));
+        if (event?.alertId === first.event.alertId) resolveEvent(event);
+      });
+      socket.addEventListener("close", () => reject(new Error("The event socket closed.")), { once: true });
+    });
+    socket.send(
+      JSON.stringify({ type: "agent-event-scope", includeConversations: false, capabilities: [capabilities[0]] }),
+    );
+    const delivered = await received;
+    socket.close();
+    machine.close();
+    check(
+      "the alert goes to the responsible admin, and a device that connects later gets it",
+      first.memberId === adaId &&
+        first.event.metric === "disk" &&
+        first.event.percent === 95 &&
+        first.event.level === 80 &&
+        isDeepStrictEqual(delivered, first.event) &&
+        typeof bobId === "string" &&
+        machine.pending(bobId).length === 0,
+      [first, delivered],
     );
   }
 

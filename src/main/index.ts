@@ -6,6 +6,7 @@ import {
   type CentralAuthState,
   type HostStatus,
   IPC_ENDPOINTS,
+  LOCAL_SERVER_ID,
 } from "@openbot/contracts/ipc";
 import { createFormat, resolveLocale, translateFor } from "@openbot/i18n";
 import { localizeSourceText } from "@openbot/i18n/source";
@@ -353,6 +354,7 @@ const windowHolder = createMainWindowHolder();
 const {
   forwardAgentEvent,
   forwardWorkflowNotice,
+  forwardMachineAlert,
   forwardBrowserDisplayState,
   forwardUpdateStatus,
   forwardUpdatePreference,
@@ -591,6 +593,7 @@ function registerIpcHandlers({
   computerUsePermissionHelp,
   analytics,
   storageUsage,
+  machineAlerts,
   trace,
   resourceMonitor,
   routineFlows,
@@ -729,6 +732,7 @@ function registerIpcHandlers({
       remoteServers,
       serverTimezone,
       agentMemoryLimit,
+      machineAlerts,
       promptCacheTtl,
       agentAccess,
       localServerId: () => teamStore.getIdentity()?.serverId,
@@ -767,6 +771,7 @@ function registerIpcHandlers({
     }),
     ...storageIpcHandlers({
       storage: storageUsage,
+      machine: machineAlerts,
       providerRuntimes,
       mailbox,
       remoteServers,
@@ -1229,6 +1234,17 @@ if (!hasSingleInstanceLock) {
       remoteServers.on("presence", forwardTeamPresence);
       remoteServers.on("directMessage", forwardDirectMessage);
       remoteServers.on("directTyping", forwardDirectTyping);
+      remoteServers.on("machineAlert", forwardMachineAlert);
+      // This computer is the host, and its user is the owner. A server with no window has nobody here to tell.
+      if (!hostedServer && !serverMode) {
+        const stopMachineAlerts = built.machineAlerts.subscribe((memberId, event) => {
+          const owner = built.teamStore.listMembers().find((member) => member.role === "owner");
+          if (memberId !== null && memberId !== owner?.id) return;
+          forwardMachineAlert(LOCAL_SERVER_ID, event);
+        });
+        teardown.push(0, "machine alert listener", stopMachineAlerts);
+      }
+      built.machineAlerts.start();
       // The selected server connects while the window loads. Its WebRTC setup takes seconds, and
       // the first screen waits for it. The other servers start after the load, below. The connection
       // needs the signed-in account, so it starts only after the account loads. A failed account

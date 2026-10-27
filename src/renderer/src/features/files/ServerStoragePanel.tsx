@@ -1,9 +1,11 @@
-import { LOCAL_SERVER_ID } from "@openbot/contracts/ipc";
+import { LOCAL_SERVER_ID, type TeamMemberSummary } from "@openbot/contracts/ipc";
 import type { AgentProfile } from "@openbot/ui/data";
+import { MachineResources } from "@openbot/ui/features/files/MachineResources";
 import { StorageOverview } from "@openbot/ui/features/files/StorageOverview";
-import { createEffect, createSignal, untrack } from "solid-js";
+import { createEffect, createSignal, Show, untrack } from "solid-js";
 import { toAgentProfile } from "../../app-message-projection";
 import { type FilesPort, filesPort } from "./files-port";
+import { createMachineResources } from "./machine-resources";
 import { createStorageUsage } from "./storage-usage";
 
 export interface ServerStorageOptions {
@@ -13,6 +15,8 @@ export interface ServerStorageOptions {
   canManage: boolean;
   onOpenAgent: (agentId: string) => void;
   onShowMessage: (agentId: string, messageId: string) => void;
+  /** The members of the server. An owner or admin among them gets the machine alerts. */
+  members?: readonly TeamMemberSummary[];
   /** The storage calls of a client with no `window.openbot`, such as the web client. */
   calls?: FilesPort;
 }
@@ -25,6 +29,7 @@ export interface ServerStorageOptions {
 export function ServerStoragePanel(props: ServerStorageOptions & { serverId: string }) {
   const calls = () => props.calls ?? filesPort();
   const storage = createStorageUsage(() => ({ serverId: props.serverId, input: { scope: "host" } }), calls);
+  const machine = createMachineResources(() => ({ serverId: props.serverId, canManage: props.canManage }), calls);
   const [agents, setAgents] = createSignal<AgentProfile[]>([]);
   createEffect(
     () => props.serverId,
@@ -108,6 +113,17 @@ export function ServerStoragePanel(props: ServerStorageOptions & { serverId: str
       onRemoveOldRuntimes={removeOldRuntimes}
       // Settings has no preview pane, so a preview opens the file in its app.
       onPreviewFile={(file) => void storage.fileAction(file, "open", { onShowInChat: () => undefined })}
+      machine={
+        <Show when={machine.state.available}>
+          <MachineResources
+            metrics={machine.state.metrics}
+            error={machine.state.error}
+            alerts={machine.state.alerts}
+            members={props.members ?? []}
+            onChangeAlerts={machine.saveAlerts}
+          />
+        </Show>
+      }
       onFileAction={(file, action) =>
         storage.fileAction(file, action, {
           onShowInChat: (row) => {

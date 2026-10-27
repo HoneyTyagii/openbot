@@ -99,6 +99,9 @@ export const messages = {
   "error.team.browserSessionNotFound": "ブラウザービューのセッションが見つかりません。",
   "error.team.mcpUnsupported": "この接続では MCP サーバーを利用できません。",
   "error.team.storageUnsupported": "この接続ではストレージを利用できません。",
+  "error.team.machineResourcesUnsupported": "この接続ではマシンの使用状況を利用できません。",
+  "error.team.machineAlertMemberInvalid":
+    "マシンのアラートを受け取れるのは、このサーバーのオーナーまたは管理者のみです。",
   "error.team.hostedSitesUnsupported": "この接続ではサイトを利用できません。",
   "error.team.hostedSitesUnregistered": "このサーバーは OpenBot に登録されていないため、サイトがありません。",
   "error.team.hostedSiteNotFound": "サイトが見つかりません。",

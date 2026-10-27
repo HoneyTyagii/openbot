@@ -30,6 +30,7 @@ import {
 import { TEAM_API_ROUTES } from "@openbot/contracts/team-api-routes";
 import { CHANNEL_ROUTES } from "@openbot/contracts/team-protocol/channels-v1";
 import { TEAM_CHANNEL_ATTENTION_CAPABILITY } from "@openbot/contracts/team-protocol/current";
+import type { MachineAlertEvent } from "@openbot/contracts/team-protocol/machine-resources-v1";
 import type { AppFormat, AppTranslate } from "@openbot/i18n";
 import { redactText } from "@openbot/logging";
 import {
@@ -417,6 +418,47 @@ export function createRendererForwarders({
     showRetainedNotification(notification);
   }
 
+  const shownMachineAlerts = new Set<string>();
+
+  /**
+   * A metric of a server's machine passed its alert level, and this user is the member who gets the
+   * alert. It shows also while the app has focus, as a usage limit does: nothing else in the window
+   * says it. A muted server or the level "nothing" keeps it quiet. A click shows the main window.
+   */
+  function forwardMachineAlert(serverId: string, event: MachineAlertEvent): void {
+    // A host sends the alerts still in force again at each reconnect.
+    const key = `${serverId}\n${event.alertId}`;
+    if (shownMachineAlerts.has(key)) return;
+    shownMachineAlerts.add(key);
+    for (const oldest of shownMachineAlerts) {
+      if (shownMachineAlerts.size <= RETAINED_NOTIFICATION_LIMIT) break;
+      shownMachineAlerts.delete(oldest);
+    }
+    if (!desktopNotificationsEnabled() || !Notification.isSupported()) return;
+    const remote = getRemoteServerManager()
+      ?.list()
+      .find((server) => server.id === serverId);
+    if (remote?.notificationsMuted || remote?.notificationLevel === "nothing") return;
+    const name =
+      serverId === LOCAL_SERVER_ID ? (getHostService()?.getStatus().serverName ?? remote?.name) : remote?.name;
+    if (!name) return;
+    const translate = getTranslate();
+    const { percent } = getFormat();
+    const params = { server: name, percent: percent(event.percent / 100), level: percent(event.level / 100) };
+    const title =
+      event.metric === "disk"
+        ? translate("notification.machineAlert.disk", params)
+        : event.metric === "memory"
+          ? translate("notification.machineAlert.memory", params)
+          : translate("notification.machineAlert.cpu", params);
+    const notification = new Notification({ title, body: translate("notification.machineAlert.body", params) });
+    notification.on("click", () => {
+      const current = getMainWindow();
+      if (current && !current.isDestroyed()) showMainWindow(current);
+    });
+    showRetainedNotification(notification);
+  }
+
   function forwardBrowserDisplayState(state: BrowserDisplayState): void {
     for (const window of BrowserWindow.getAllWindows()) {
       sendToRenderer(window, IPC_ENDPOINTS.browser.displayState, state);
@@ -516,6 +558,7 @@ export function createRendererForwarders({
   return {
     forwardAgentEvent,
     forwardWorkflowNotice,
+    forwardMachineAlert,
     forwardBrowserDisplayState,
     forwardUpdateStatus,
     forwardUpdatePreference,
