@@ -104,7 +104,7 @@ export const messages = {
   "files.machine.cpu": "CPU",
   "files.machine.diskDetail": "{used} из {total} · свободно {free}",
   "files.machine.memoryDetail": "{used} из {total}",
-  "files.machine.cores": { one: "{count} ядро", few: "{count} ядра", many: "{count} ядер", other: "{count} ядра" },
+  "files.machine.cores": { one: "{cores} ядро", few: "{cores} ядра", many: "{cores} ядер", other: "{cores} ядра" },
   "files.machine.unknown": "Недоступно",
   "files.machine.used": "Занято {percent}",
   "files.machine.diskAbove": "Диск занят больше чем на {level}",

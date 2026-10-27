@@ -9,17 +9,22 @@ import {
 export { MACHINE_ALERT_LEVEL_MAX, MACHINE_ALERT_LEVEL_MIN, MACHINE_METRICS, type MachineMetric };
 
 /**
- * The use of the machine that runs a host (`machine-resources-v1`). Each value is null when the host
- * cannot tell. Memory counts what programs can still use, so file caches do not read as used.
+ * The use of the machine that runs a host (`machine-resources-v1`), as the server can use it: in a
+ * container, its memory and CPU limits. Each value is null when the host cannot tell. Memory counts
+ * what programs can still use, so file caches do not read as used.
  */
 export interface MachineMetrics {
+  /** As `df` counts it: space that the file system keeps for root is neither used nor free. */
+  diskUsedBytes: number | null;
+  /** What the server can still write. */
   diskFreeBytes: number | null;
   diskTotalBytes: number | null;
   memoryAvailableBytes: number | null;
   memoryTotalBytes: number | null;
-  /** All cores together, in whole percent, since the reading before. */
+  /** The use of the CPUs the server can use, in whole percent, since the reading before. */
   cpuPercent: number | null;
-  cpuCores: number;
+  /** The CPUs the server can use, in thousandths: its CPU limit, or every core. */
+  cpuMillicores: number;
   checkedAt: string;
 }
 
@@ -47,8 +52,13 @@ export function machineAlertLevel(settings: MachineAlertSettings, metric: Machin
 /** The use of `metric` from 0 to 1, or null when the host cannot tell. */
 export function machineMetricRatio(metrics: MachineMetrics, metric: MachineMetric): number | null {
   if (metric === "cpu") return metrics.cpuPercent === null ? null : metrics.cpuPercent / 100;
-  const total = metric === "disk" ? metrics.diskTotalBytes : metrics.memoryTotalBytes;
-  const free = metric === "disk" ? metrics.diskFreeBytes : metrics.memoryAvailableBytes;
+  if (metric === "disk") {
+    // As `df` counts it, so the disk is full when nothing is free for the server.
+    const { diskUsedBytes: used, diskFreeBytes: free } = metrics;
+    if (used === null || free === null || used + free <= 0) return null;
+    return Math.min(1, Math.max(0, used / (used + free)));
+  }
+  const { memoryTotalBytes: total, memoryAvailableBytes: free } = metrics;
   if (total === null || free === null || total <= 0) return null;
   return Math.min(1, Math.max(0, (total - free) / total));
 }
@@ -62,23 +72,25 @@ const isLevel = (value: unknown): value is number =>
 export function decodeMachineMetrics(value: unknown): MachineMetrics {
   if (
     !isDynamicRecord(value) ||
+    !isNullableCount(value.diskUsedBytes) ||
     !isNullableCount(value.diskFreeBytes) ||
     !isNullableCount(value.diskTotalBytes) ||
     !isNullableCount(value.memoryAvailableBytes) ||
     !isNullableCount(value.memoryTotalBytes) ||
     !(value.cpuPercent === null || (isCount(value.cpuPercent) && value.cpuPercent <= 100)) ||
-    !isCount(value.cpuCores) ||
+    !isCount(value.cpuMillicores) ||
     !isString(value.checkedAt) ||
     value.checkedAt.length > 64
   )
     throw new Error("Invalid machine metrics.");
   return {
+    diskUsedBytes: value.diskUsedBytes,
     diskFreeBytes: value.diskFreeBytes,
     diskTotalBytes: value.diskTotalBytes,
     memoryAvailableBytes: value.memoryAvailableBytes,
     memoryTotalBytes: value.memoryTotalBytes,
     cpuPercent: value.cpuPercent,
-    cpuCores: value.cpuCores,
+    cpuMillicores: value.cpuMillicores,
     checkedAt: value.checkedAt,
   };
 }

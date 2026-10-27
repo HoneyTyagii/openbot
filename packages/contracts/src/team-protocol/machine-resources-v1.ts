@@ -25,12 +25,13 @@ export const MACHINE_ALERT_LEVEL_MIN = 50;
 export const MACHINE_ALERT_LEVEL_MAX = 99;
 
 const metrics = fields({
+  diskUsedBytes: nullable(count),
   diskFreeBytes: nullable(count),
   diskTotalBytes: nullable(count),
   memoryAvailableBytes: nullable(count),
   memoryTotalBytes: nullable(count),
   cpuPercent: nullable(count),
-  cpuCores: count,
+  cpuMillicores: count,
   checkedAt: string(64),
 });
 

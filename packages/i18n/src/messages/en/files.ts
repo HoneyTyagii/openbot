@@ -88,7 +88,7 @@ export const messages = defineMessages("files", {
   "files.machine.cpu": "CPU",
   "files.machine.diskDetail": "{used} of {total} · {free} free",
   "files.machine.memoryDetail": "{used} of {total}",
-  "files.machine.cores": { one: "{count} core", other: "{count} cores" },
+  "files.machine.cores": { one: "{cores} core", other: "{cores} cores" },
   "files.machine.unknown": "Not available",
   "files.machine.used": "{percent} used",
   "files.machine.diskAbove": "Disk use is above {level}",

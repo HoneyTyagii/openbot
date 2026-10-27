@@ -89,7 +89,7 @@ export const messages = {
   "files.machine.cpu": "CPU",
   "files.machine.diskDetail": "{used} / {total} · 空き {free}",
   "files.machine.memoryDetail": "{used} / {total}",
-  "files.machine.cores": { other: "{count} コア" },
+  "files.machine.cores": { other: "{cores} コア" },
   "files.machine.unknown": "利用できません",
   "files.machine.used": "{percent} 使用中",
   "files.machine.diskAbove": "ディスク使用率が {level} を超えています",

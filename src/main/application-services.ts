@@ -2041,7 +2041,8 @@ export async function createApplicationServices({
     join(app.getPath("userData"), MACHINE_ALERTS_PREFERENCE_FILE),
   );
   await runCauseEffect(machineAlertStore.load());
-  const machineMetrics = new MachineMetricsSampler(() => storageUsage.disk());
+  // The same disk as the sidebar storage card: the one that holds the data folder.
+  const machineMetrics = new MachineMetricsSampler(storageSources.roots.data);
   const machineAlerts = new MachineAlertMonitor({
     read: () => machineMetrics.read(),
     store: machineAlertStore,

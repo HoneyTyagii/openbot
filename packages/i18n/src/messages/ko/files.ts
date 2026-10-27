@@ -88,7 +88,7 @@ export const messages = {
   "files.machine.cpu": "CPU",
   "files.machine.diskDetail": "{used} / {total} · {free} 남음",
   "files.machine.memoryDetail": "{used} / {total}",
-  "files.machine.cores": { other: "코어 {count}개" },
+  "files.machine.cores": { other: "코어 {cores}개" },
   "files.machine.unknown": "사용할 수 없음",
   "files.machine.used": "{percent} 사용 중",
   "files.machine.diskAbove": "디스크 사용량이 {level}보다 높아요",

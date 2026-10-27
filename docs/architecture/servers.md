@@ -44,9 +44,14 @@ capability shows no card.
 The optional `machine-resources-v1` capability (`team-protocol/machine-resources-v1.ts`) adds the
 machine part at the top of Server settings › Storage, for an owner or admin only. `POST
 /v1/admin/host/machine/metrics` answers the disk, memory and CPU use of the machine that runs the
-host (`src/main/machine-metrics.ts`). Memory counts what programs can still use: `MemAvailable` and
-the cgroup limit on Linux, Activity Monitor's "Memory Used" from `vm_stat` on macOS, and free memory
-on Windows. CPU is the use of all cores since the reading before. The panel reads it each minute
+host (`src/main/machine-metrics.ts`), as the server can use it. The disk is the one that holds the
+data folder, counted as `df` counts it: space that ext4 keeps for root is neither used nor free. In
+a Docker container that is the disk of the Docker host, which all its containers share; Docker sets
+no disk limit per container. Memory counts what programs can still use: `MemAvailable` and the
+cgroup limit on Linux, Activity Monitor's "Memory Used" from `vm_stat` on macOS, and free memory on
+Windows. CPU is the use since the reading before. When main's cgroup has a CPU limit (`cpu.max`,
+such as `docker run --cpus`), it is the cgroup's `usage_usec` against that limit, and the core count
+is the limit; otherwise it is the use of all cores of the machine. The panel reads it each minute
 while it is open; the read routes are passive. `.../machine/alerts` and `.../alerts/update` read and
 set one level per metric (50–99%) and the owner or admin who gets the alert, in
 `openbot-machine-alerts-v1.json` (`src/main/machine-alerts.ts`). With no member set, or when that

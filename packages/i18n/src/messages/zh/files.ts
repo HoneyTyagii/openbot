@@ -86,7 +86,7 @@ export const messages = {
   "files.machine.cpu": "CPU",
   "files.machine.diskDetail": "{used} / {total} · 剩余 {free}",
   "files.machine.memoryDetail": "{used} / {total}",
-  "files.machine.cores": { one: "{count} 核", other: "{count} 核" },
+  "files.machine.cores": { one: "{cores} 核", other: "{cores} 核" },
   "files.machine.unknown": "不可用",
   "files.machine.used": "已用 {percent}",
   "files.machine.diskAbove": "磁盘使用率超过 {level}",

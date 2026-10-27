@@ -89,7 +89,7 @@ export const messages = {
   "files.machine.cpu": "CPU",
   "files.machine.diskDetail": "{used} sur {total} · {free} libres",
   "files.machine.memoryDetail": "{used} sur {total}",
-  "files.machine.cores": { one: "{count} cœur", other: "{count} cœurs" },
+  "files.machine.cores": { one: "{cores} cœur", other: "{cores} cœurs" },
   "files.machine.unknown": "Non disponible",
   "files.machine.used": "{percent} utilisés",
   "files.machine.diskAbove": "L’utilisation du disque dépasse {level}",

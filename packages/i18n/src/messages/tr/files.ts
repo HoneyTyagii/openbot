@@ -87,7 +87,7 @@ export const messages = {
   "files.machine.cpu": "CPU",
   "files.machine.diskDetail": "{used} / {total} · {free} boş",
   "files.machine.memoryDetail": "{used} / {total}",
-  "files.machine.cores": { one: "{count} çekirdek", other: "{count} çekirdek" },
+  "files.machine.cores": { one: "{cores} çekirdek", other: "{cores} çekirdek" },
   "files.machine.unknown": "Kullanılamıyor",
   "files.machine.used": "{percent} kullanımda",
   "files.machine.diskAbove": "Disk kullanımı {level} üzerinde",

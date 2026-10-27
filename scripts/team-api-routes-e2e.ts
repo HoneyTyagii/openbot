@@ -573,12 +573,13 @@ function bitwardenSettled(connector: BitwardenConnectorService): Promise<Bitward
 const store = new TeamStore(join(root, "team.json"));
 // The real alert store and member check, over a fixed reading of a nearly full machine.
 const machineMetrics = {
+  diskUsedBytes: 61 * 1024 ** 3,
   diskFreeBytes: 3 * 1024 ** 3,
   diskTotalBytes: 64 * 1024 ** 3,
   memoryAvailableBytes: 2 * 1024 ** 3,
   memoryTotalBytes: 16 * 1024 ** 3,
   cpuPercent: 37,
-  cpuCores: 8,
+  cpuMillicores: 1500,
   checkedAt: "2026-10-27T12:00:00.000Z",
 };
 const machineAlertStore = new MachineAlertPreferenceStore(join(root, "machine-alerts.json"));

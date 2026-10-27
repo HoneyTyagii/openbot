@@ -274,16 +274,26 @@ export function MachineResources(props: MachineResourcesProps) {
   }
 
   function metricDetail(metrics: MachineMetrics, metric: MachineMetric): string {
-    if (metric === "cpu") return t("files.machine.cores", { count: metrics.cpuCores });
-    const total = metric === "disk" ? metrics.diskTotalBytes : metrics.memoryTotalBytes;
-    const free = metric === "disk" ? metrics.diskFreeBytes : metrics.memoryAvailableBytes;
+    // A container limit can be part of a core, such as 1.5.
+    if (metric === "cpu") {
+      const cores = metrics.cpuMillicores / 1000;
+      return t("files.machine.cores", { count: cores, cores: format.number(cores, { maximumFractionDigits: 2 }) });
+    }
+    if (metric === "disk") {
+      const { diskUsedBytes: used, diskFreeBytes: free, diskTotalBytes: total } = metrics;
+      if (used === null || free === null || total === null) return t("files.machine.unknown");
+      return t("files.machine.diskDetail", {
+        used: format.fileSize(used),
+        total: format.fileSize(total),
+        free: format.fileSize(free),
+      });
+    }
+    const { memoryTotalBytes: total, memoryAvailableBytes: free } = metrics;
     if (total === null || free === null) return t("files.machine.unknown");
-    const params = {
+    return t("files.machine.memoryDetail", {
       used: format.fileSize(Math.max(0, total - free)),
       total: format.fileSize(total),
-      free: format.fileSize(free),
-    };
-    return metric === "disk" ? t("files.machine.diskDetail", params) : t("files.machine.memoryDetail", params);
+    });
   }
 }
 

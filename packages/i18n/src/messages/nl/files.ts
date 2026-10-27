@@ -89,7 +89,7 @@ export const messages = {
   "files.machine.cpu": "CPU",
   "files.machine.diskDetail": "{used} van {total} · {free} vrij",
   "files.machine.memoryDetail": "{used} van {total}",
-  "files.machine.cores": { one: "{count} kern", other: "{count} kernen" },
+  "files.machine.cores": { one: "{cores} kern", other: "{cores} kernen" },
   "files.machine.unknown": "Niet beschikbaar",
   "files.machine.used": "{percent} gebruikt",
   "files.machine.diskAbove": "Schijfgebruik is hoger dan {level}",
